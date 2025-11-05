@@ -3,10 +3,10 @@ let itemData = {};
 let articlesToLoad = []; 
 const CSV_FILE_PATH = 'stammdaten.csv';
 
-// Maximale Paletten-Dimensionen
-const MAX_PALETTE_L = 295;
-const MAX_PALETTE_B = 210;
-const MAX_PALETTE_H = 210;
+// Maximale Paletten-Dimensionen (Hardcoded Logik für Kapazitätsprüfung)
+const MAX_PALETTE_L = 295; // NEUER WERT
+const MAX_PALETTE_B = 210; // NEUER WERT
+const MAX_PALETTE_H = 210; // NEUER WERT
 
 // Three.js Konstanten
 let scene, camera, renderer, controls;
@@ -214,7 +214,6 @@ function drawPalletRealistic(data, positionY, positionX = 0, positionZ = 0) {
     
     const material = new THREE.MeshStandardMaterial({ color: color });
 
-    // 1. Die 3 Längsbretter (Oben)
     const boardH = h / 4;
     const boardL = l;
     const boardB = b / 6; 
@@ -227,7 +226,6 @@ function drawPalletRealistic(data, positionY, positionX = 0, positionZ = 0) {
         group.add(mesh);
     });
 
-    // 2. Die 3 Klötze (Quader, unten)
     const blockH = h * 0.7;
     const blockSide = l / 5; 
     const xPositions = [-l / 2 + blockSide / 2, 0, l / 2 - blockSide / 2];
@@ -374,7 +372,7 @@ window.visualizePackage = function() {
                 } else {
                     // 3a. BASIFLÄCHE DER AKTUELLEN SCHICHT IST VOLL
                     currentPallet.isLayerFull = true;
-                    // Nächster while-Durchlauf behandelt den Schichtwechsel
+                    // Der nächste while-Durchlauf behandelt den Schichtwechsel
                     
                 }
             } 
@@ -503,4 +501,3 @@ function displaySidebar(pallets) {
 // Initialisiere die UI beim Laden der Seite
 updateLoadList();
 loadAndParseCSV();
-
