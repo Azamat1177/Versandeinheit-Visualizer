@@ -3,10 +3,10 @@ let itemData = {};
 let articlesToLoad = []; 
 const CSV_FILE_PATH = 'stammdaten.csv';
 
-// Maximale Paletten-Dimensionen (Hardcoded Logik für Kapazitätsprüfung)
-const MAX_PALETTE_L = 295;
-const MAX_PALETTE_B = 210;
-const MAX_PALETTE_H = 210;
+// Maximale Paletten-Dimensionen
+const MAX_PALETTE_L = 285;
+const MAX_PALETTE_B = 160;
+const MAX_PALETTE_H = 160;
 
 // Three.js Konstanten
 let scene, camera, renderer, controls;
@@ -32,7 +32,6 @@ async function loadAndParseCSV() {
             const values = lines[i].split(';'); 
             if (values.length !== headers.length) continue; 
 
-            // Korrigierte 7-spaltige Struktur (Einheit entfällt)
             const item = {
                 'Artikel-Nr': values[0].trim(), 
                 'Name': values[1].trim(),       
@@ -43,7 +42,6 @@ async function loadAndParseCSV() {
                 'color': parseInt(values[6].trim(), 16) 
             };
             
-            // Fehlerhafte numerische Daten überspringen (Robustheit)
             if (isNaN(item.L) || isNaN(item.B) || isNaN(item.H)) {
                 console.warn(`Fehlerhafte numerische Daten in Artikel ${item['Artikel-Nr']}. Übersprungen.`);
                 continue; 
@@ -52,7 +50,6 @@ async function loadAndParseCSV() {
             itemData[item['Artikel-Nr']] = item;
         }
 
-        // KRITISCHE PRÜFUNG: Ist die Palette vorhanden?
         if (!itemData['PAL-EU']) {
             throw new Error("PAL-EU nicht in den geladenen Stammdaten gefunden.");
         }
@@ -70,14 +67,11 @@ async function loadAndParseCSV() {
 
 // --- 3. ARTIKEL-SUCHE UND UI-LOGIK ---
 
-// HILFSFUNKTION: Sucht nach dem Artikel (O(N) Fallback für Fuzzy Search)
 function findArticleData(inputNr) {
-    // 1. Exakte Suche (beste Performance)
     if (itemData[inputNr]) {
         return itemData[inputNr];
     }
     
-    // 2. Robuste Suche (bei 9000 Artikeln noch akzeptabel als Fallback)
     const normalizedInput = inputNr.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
     for (const key in itemData) {
@@ -89,8 +83,7 @@ function findArticleData(inputNr) {
             }
         }
     }
-
-    return null; // Nichts gefunden
+    return null;
 }
 
 
@@ -120,7 +113,6 @@ window.addToLoad = function() {
         return;
     }
 
-    // SUCHE MIT DER NEUEN FUNKTION
     const item = findArticleData(articleNr);
     
     if (!item || item['Artikel-Nr'] === 'PAL-EU') {
@@ -211,7 +203,6 @@ function drawBox(data, positionY, positionX = 0, positionZ = 0) {
     return box;
 }
 
-// Funktion zum Zeichnen einer realistischen Palette
 function drawPalletRealistic(data, positionY, positionX = 0, positionZ = 0) {
     const l = data.L / SCALE_FACTOR; 
     const b = data.B / SCALE_FACTOR; 
@@ -280,9 +271,6 @@ function createNewPallet(id, paletteBase, lastPallet = null) {
     };
 }
 
-// --- 5. LOGIK FÜR STAPELUNG & MULTI-PALETTEN ---
-// ... (createNewPallet Funktion bleibt unverändert) ...
-
 window.visualizePackage = function() {
     if (Object.keys(itemData).length === 0) return;
 
@@ -293,7 +281,6 @@ window.visualizePackage = function() {
     clearScene();
 
     if (articlesToLoad.length === 0) {
-        // ... (Logik für leere Ladung) ...
         drawPalletRealistic(paletteBase, 0, 0, 0);
         document.getElementById('stat-l').innerText = `${pal_L} cm`;
         document.getElementById('stat-b').innerText = `${pal_B} cm`;
@@ -327,10 +314,8 @@ window.visualizePackage = function() {
                 nextStackHeight = currentPallet.currentH + currentPallet.layerHeight;
             }
             
-            // HÖHEN-PRÜFUNG IST KRITISCH
             const heightOkay = nextStackHeight + item.H <= MAX_PALETTE_H;
             
-            // Plausibilitäts-Checks (Overhang)
             const newMaxL = Math.max(currentPallet.maxL, item.L);
             const newMaxB = Math.max(currentPallet.maxB, item.B);
             const maxDimensionOkay = newMaxL <= MAX_PALETTE_L && newMaxB <= MAX_PALETTE_B;
@@ -341,7 +326,7 @@ window.visualizePackage = function() {
                 if (heightOkay && maxDimensionOkay) {
                     currentPallet.items.push({ item, posL: 0, posZ: 0, posH: currentPallet.currentH });
                     currentPallet.layerHeight = item.H;
-                    currentPallet.currentH = nextStackHeight + item.H; // FIX: currentH sofort aktualisieren
+                    currentPallet.currentH = nextStackHeight + item.H; 
                     currentPallet.maxL = newMaxL;
                     currentPallet.maxB = newMaxB;
                     placed = true;
@@ -353,9 +338,6 @@ window.visualizePackage = function() {
             } 
             // 2. PALETTE WIRD GEFÜLLT (Basisfläche / Schicht)
             else if (!currentPallet.isLayerFull) {
-                
-                // MUSS Höhe prüfen, bevor wir überhaupt mit Platzierung weitermachen (verhindert Überlauf)
-                if (!heightOkay) break; 
 
                 const remainingL = (pal_L / 2) - currentPallet.xCursor; 
                 const fitsInCurrentRow = item.L <= remainingL;
@@ -392,16 +374,7 @@ window.visualizePackage = function() {
                 } else {
                     // 3a. BASIFLÄCHE DER AKTUELLEN SCHICHT IST VOLL
                     currentPallet.isLayerFull = true;
-                    currentPallet.currentH = nextStackHeight + currentPallet.layerHeight; // FIX: Höhe richtig erhöhen
-
-                    // NEUE HÖHE PRÜFEN MUSS HIER NICHT ERFOLGEN, DA ES SCHON AM ANFANG DES LOOPS GESCHIEHT
-                    
-                    // Setze Cursor für neue Schicht zurück
-                    currentPallet.xCursor = -pal_L / 2; 
-                    currentPallet.zCursor = -pal_B / 2;
-                    currentPallet.maxZInRow = -pal_B / 2;
-                    currentPallet.layerHeight = item.H; // Neue Schichthöhe definieren (basierend auf aktuellem Item)
-                    currentPallet.isLayerFull = false;
+                    // Nächster while-Durchlauf behandelt den Schichtwechsel
                     
                 }
             } 
@@ -409,9 +382,8 @@ window.visualizePackage = function() {
             else {
                 // HÖHEN-PRIORITÄTS-LOGIK: Stapelung erzwingen
                 if (heightOkay) {
-                    // FALSCHE STAPELUNG (Sollte nicht passieren, aber zur Sicherheit)
                     currentPallet.isLayerFull = true;
-                    currentPallet.currentH = nextStackHeight + currentPallet.layerHeight; // FIX: Höhe richtig erhöhen
+                    currentPallet.currentH += currentPallet.layerHeight; 
                     
                     currentPallet.xCursor = -pal_L / 2; 
                     currentPallet.zCursor = -pal_B / 2;
@@ -434,11 +406,13 @@ window.visualizePackage = function() {
         }
     }
     
-    // --- 7. RENDERING & DATEN-AGGREGATION (FIX: currentH korrekt berechnen) ---
+    // --- 7. RENDERING & DATEN-AGGREGATION ---
     let overallMaxH = 0;
     let totalOverallWeight = 0;
     
     pallets.forEach(pallet => {
+        const pL_scaled = pal_L / SCALE_FACTOR;
+        const pB_scaled = pal_B / SCALE_FACTOR;
         const offsetX = pallet.drawingOffsetX;
         const offsetZ = pallet.drawingOffsetZ;
         
@@ -448,15 +422,14 @@ window.visualizePackage = function() {
         let palletMaxH = paletteBase.H;
         
         pallet.items.forEach(pItem => {
-            const h_scaled = pItem.posH / SCALE_FACTOR; // Dies ist die BASIS-Höhe des Kastens
-            
+            const h_scaled = pItem.posH / SCALE_FACTOR;
             const l_scaled = pItem.posL / SCALE_FACTOR;
             const z_scaled = pItem.posZ / SCALE_FACTOR;
 
             drawBox(pItem.item, h_scaled, pItem.posL / SCALE_FACTOR + offsetX, pItem.posZ / SCALE_FACTOR + offsetZ);
             
             palletTotalWeight += pItem.item.Gewicht;
-            palletMaxH = Math.max(palletMaxH, pItem.posH + pItem.item.H); // Die korrekte maximale Höhe
+            palletMaxH = Math.max(palletMaxH, pItem.posH + pItem.item.H);
         });
         
         pallet.finalWeight = palletTotalWeight;
@@ -465,8 +438,8 @@ window.visualizePackage = function() {
         overallMaxH = Math.max(overallMaxH, palletMaxH);
     });
 
-    // --- 8. STATISTIKEN & KAMERA (Unverändert) ---
-    // ... (Der Rest des Codes zur Statistik-Anzeige und Kamerasteuerung bleibt unverändert) ...
+    // --- 8. STATISTIKEN & KAMERA ---
+
     const overallMaxH_scaled = overallMaxH / SCALE_FACTOR;
 
     const finalL = pallets.reduce((max, p) => Math.max(max, p.maxL), pal_L);
@@ -530,5 +503,3 @@ function displaySidebar(pallets) {
 // Initialisiere die UI beim Laden der Seite
 updateLoadList();
 loadAndParseCSV();
-
-
