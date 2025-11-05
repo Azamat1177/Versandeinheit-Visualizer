@@ -3,10 +3,10 @@ let itemData = {};
 let articlesToLoad = []; 
 const CSV_FILE_PATH = 'stammdaten.csv';
 
-// Maximale Paletten-Dimensionen
-const MAX_PALETTE_L = 295;
-const MAX_PALETTE_B = 200;
-const MAX_PALETTE_H = 200;
+// Maximale Paletten-Dimensionen (Hardcoded Logik für Kapazitätsprüfung)
+const MAX_PALETTE_L = 285;
+const MAX_PALETTE_B = 160;
+const MAX_PALETTE_H = 160;
 
 // Three.js Konstanten
 let scene, camera, renderer, controls;
@@ -16,13 +16,11 @@ const SCALE_FACTOR = 100; // 1 Einheit in Three.js = 100cm (Meter)
 
 // --- 2. CSV LADEN UND PARSEN ---
 
-// --- 2. CSV LADEN UND PARSEN (Verbessert) ---
-
 async function loadAndParseCSV() {
     try {
         const response = await fetch(CSV_FILE_PATH);
         if (!response.ok) {
-             throw new Error(`Konnte CSV-Datei nicht laden. Status: ${response.status}`);
+             throw new Error(`Konnte CSV-Datei nicht laden.`);
         }
         
         const csvText = await response.text();
@@ -31,35 +29,29 @@ async function loadAndParseCSV() {
         const headers = lines[0].split(';').map(h => h.trim()); 
         
         for (let i = 1; i < lines.length; i++) {
-            const rawValues = lines[i].split(';'); 
-            // Bereinigen aller Werte zuerst
-            const values = rawValues.map(v => v.trim()); 
-            
-            if (values.length !== headers.length) {
-                 console.warn(`Überspringe Zeile ${i}: Falsche Spaltenanzahl (${values.length} statt ${headers.length})`);
-                 continue;
-            }
+            const values = lines[i].split(';'); 
+            if (values.length !== headers.length) continue; 
 
-            // WICHTIG: Korrigierte 7-spaltige Struktur
+            // Korrigierte 7-spaltige Struktur (Einheit entfällt)
             const item = {
-                'Artikel-Nr': values[0], 
-                'Name': values[1],       
-                'L': parseFloat(values[2]), // parseFloat() funktioniert nur mit bereinigten Werten
-                'B': parseFloat(values[3]),
-                'H': parseFloat(values[4]),
-                'Gewicht': parseFloat(values[5]),
-                'color': parseInt(values[6], 16) 
+                'Artikel-Nr': values[0].trim(), 
+                'Name': values[1].trim(),       
+                'L': parseFloat(values[2].trim()),
+                'B': parseFloat(values[3].trim()),
+                'H': parseFloat(values[4].trim()),
+                'Gewicht': parseFloat(values[5].trim()),
+                'color': parseInt(values[6].trim(), 16) 
             };
             
-            // Fehlerhafte Daten überspringen
-            if (isNaN(item.L) || isNaN(item.B)) {
+            // Fehlerhafte numerische Daten überspringen (Robustheit)
+            if (isNaN(item.L) || isNaN(item.B) || isNaN(item.H)) {
                 console.warn(`Fehlerhafte numerische Daten in Artikel ${item['Artikel-Nr']}. Übersprungen.`);
                 continue; 
             }
 
             itemData[item['Artikel-Nr']] = item;
         }
-        
+
         // KRITISCHE PRÜFUNG: Ist die Palette vorhanden?
         if (!itemData['PAL-EU']) {
             throw new Error("PAL-EU nicht in den geladenen Stammdaten gefunden.");
@@ -76,7 +68,31 @@ async function loadAndParseCSV() {
 }
 
 
-// --- 3. UI/LADUNGS-MANAGEMENT FUNKTIONEN ---
+// --- 3. ARTIKEL-SUCHE UND UI-LOGIK ---
+
+// HILFSFUNKTION: Sucht nach dem Artikel (O(N) Fallback für Fuzzy Search)
+function findArticleData(inputNr) {
+    // 1. Exakte Suche (beste Performance)
+    if (itemData[inputNr]) {
+        return itemData[inputNr];
+    }
+    
+    // 2. Robuste Suche (bei 9000 Artikeln noch akzeptabel als Fallback)
+    const normalizedInput = inputNr.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+    for (const key in itemData) {
+        if (itemData.hasOwnProperty(key)) {
+            const normalizedKey = key.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            
+            if (normalizedKey === normalizedInput) {
+                return itemData[key];
+            }
+        }
+    }
+
+    return null; // Nichts gefunden
+}
+
 
 function updateLoadList() {
     const listContainer = document.getElementById('currentLoadList');
@@ -104,9 +120,10 @@ window.addToLoad = function() {
         return;
     }
 
-    const item = itemData[articleNr];
-    // KORRIGIERTE PRÜFUNG ohne 'Einheit'
-    if (!item || articleNr === 'PAL-EU') {
+    // SUCHE MIT DER NEUEN FUNKTION
+    const item = findArticleData(articleNr);
+    
+    if (!item || item['Artikel-Nr'] === 'PAL-EU') {
         alert("Artikelnummer nicht gefunden oder ist eine Palette.");
         return;
     }
@@ -194,11 +211,11 @@ function drawBox(data, positionY, positionX = 0, positionZ = 0) {
     return box;
 }
 
-// NEU: Funktion zum Zeichnen einer realistischen Palette
+// Funktion zum Zeichnen einer realistischen Palette
 function drawPalletRealistic(data, positionY, positionX = 0, positionZ = 0) {
-    const l = data.L / SCALE_FACTOR; // 1.2
-    const b = data.B / SCALE_FACTOR; // 1.2
-    const h = data.H / SCALE_FACTOR; // 0.144
+    const l = data.L / SCALE_FACTOR; 
+    const b = data.B / SCALE_FACTOR; 
+    const h = data.H / SCALE_FACTOR; 
     const color = data.color;
 
     const group = new THREE.Group();
@@ -206,7 +223,7 @@ function drawPalletRealistic(data, positionY, positionX = 0, positionZ = 0) {
     
     const material = new THREE.MeshStandardMaterial({ color: color });
 
-    // --- 1. Die 3 Längsbretter (Oben) ---
+    // 1. Die 3 Längsbretter (Oben)
     const boardH = h / 4;
     const boardL = l;
     const boardB = b / 6; 
@@ -219,7 +236,7 @@ function drawPalletRealistic(data, positionY, positionX = 0, positionZ = 0) {
         group.add(mesh);
     });
 
-    // --- 2. Die 3 Klötze (Quader, unten) ---
+    // 2. Die 3 Klötze (Quader, unten)
     const blockH = h * 0.7;
     const blockSide = l / 5; 
     const xPositions = [-l / 2 + blockSide / 2, 0, l / 2 - blockSide / 2];
@@ -242,7 +259,6 @@ function createNewPallet(id, paletteBase, lastPallet = null) {
     const pal_L = paletteBase.L;
     const pal_B = paletteBase.B;
     
-    // Offset-Berechnung: (Offset der letzten Palette) + (Palettenlänge * 1.5 Abstandsfaktor)
     const offset = lastPallet ? lastPallet.drawingOffsetX + (pal_L / SCALE_FACTOR) * 1.5 : 0;
     
     return {
@@ -274,7 +290,7 @@ window.visualizePackage = function() {
     clearScene();
 
     if (articlesToLoad.length === 0) {
-        drawPalletRealistic(paletteBase, 0, 0, 0); // Geänderte Funktion
+        drawPalletRealistic(paletteBase, 0, 0, 0);
         document.getElementById('stat-l').innerText = `${pal_L} cm`;
         document.getElementById('stat-b').innerText = `${pal_B} cm`;
         document.getElementById('stat-h').innerText = `${paletteBase.H.toFixed(1)} cm`;
@@ -334,6 +350,7 @@ window.visualizePackage = function() {
 
                 const remainingL = (pal_L / 2) - currentPallet.xCursor; 
                 const fitsInCurrentRow = item.L <= remainingL;
+                
                 const remainingB = (pal_B / 2) - currentPallet.maxZInRow;
                 const fitsInNewRow = item.B <= remainingB;
 
@@ -507,6 +524,3 @@ function displaySidebar(pallets) {
 // Initialisiere die UI beim Laden der Seite
 updateLoadList();
 loadAndParseCSV();
-
-
-
