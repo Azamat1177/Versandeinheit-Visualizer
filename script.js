@@ -5,7 +5,7 @@ const CSV_FILE_PATH = 'stammdaten.csv';
 
 // Maximale Paletten-Dimensionen
 const MAX_PALETTE_L = 285;
-const MAX_PALETTE_B = 180;
+const MAX_PALETTE_B = 160;
 const MAX_PALETTE_H = 160;
 
 // Three.js Konstanten
@@ -32,6 +32,7 @@ async function loadAndParseCSV() {
             const values = lines[i].split(';'); 
             if (values.length !== headers.length) continue; 
 
+            // WICHTIG: Die Einheiten-Spalte (Index 6) ist entfernt!
             const item = {
                 'Artikel-Nr': values[0].trim(), 
                 'Name': values[1].trim(),       
@@ -39,8 +40,8 @@ async function loadAndParseCSV() {
                 'B': parseFloat(values[3].trim()),
                 'H': parseFloat(values[4].trim()),
                 'Gewicht': parseFloat(values[5].trim()),
-                // Die Spalte Einheit ist entfallen
-                'color': parseInt(values[6].trim(), 16) // <-- Index von 7 auf 6 geändert
+                // Einheit entfällt
+                'color': parseInt(values[6].trim(), 16) // Index 6
             };
             
             itemData[item['Artikel-Nr']] = item;
@@ -85,8 +86,9 @@ window.addToLoad = function() {
         return;
     }
 
-   const item = itemData[articleNr];
-    if (!item || articleNr === 'PAL-EU') { // <-- NEUE, DIREKTE PRÜFUNG AUF PALETTE
+    const item = itemData[articleNr];
+    // KORRIGIERTE PRÜFUNG ohne 'Einheit'
+    if (!item || articleNr === 'PAL-EU') {
         alert("Artikelnummer nicht gefunden oder ist eine Palette.");
         return;
     }
@@ -174,12 +176,55 @@ function drawBox(data, positionY, positionX = 0, positionZ = 0) {
     return box;
 }
 
+// NEU: Funktion zum Zeichnen einer realistischen Palette
+function drawPalletRealistic(data, positionY, positionX = 0, positionZ = 0) {
+    const l = data.L / SCALE_FACTOR; // 1.2
+    const b = data.B / SCALE_FACTOR; // 1.2
+    const h = data.H / SCALE_FACTOR; // 0.144
+    const color = data.color;
+
+    const group = new THREE.Group();
+    group.position.set(positionX, positionY, positionZ);
+    
+    const material = new THREE.MeshStandardMaterial({ color: color });
+
+    // --- 1. Die 3 Längsbretter (Oben) ---
+    const boardH = h / 4;
+    const boardL = l;
+    const boardB = b / 6; 
+    const zPositions = [-b / 2 + boardB / 2, 0, b / 2 - boardB / 2];
+
+    zPositions.forEach(z => {
+        const geometry = new THREE.BoxGeometry(boardL, boardH, boardB);
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(0, h - boardH / 2, z); 
+        group.add(mesh);
+    });
+
+    // --- 2. Die 3 Klötze (Quader, unten) ---
+    const blockH = h * 0.7;
+    const blockSide = l / 5; 
+    const xPositions = [-l / 2 + blockSide / 2, 0, l / 2 - blockSide / 2];
+    
+    xPositions.forEach(x => {
+        const geometry = new THREE.BoxGeometry(blockSide, blockH, b);
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(x, blockH / 2, 0);
+        group.add(mesh);
+    });
+
+    scene.add(group);
+    return group;
+}
+
+
 // --- 5. LOGIK FÜR STAPELUNG & MULTI-PALETTEN ---
 
 function createNewPallet(id, paletteBase, lastPallet = null) {
     const pal_L = paletteBase.L;
     const pal_B = paletteBase.B;
     
+    // Offset-Berechnung: (Offset der letzten Palette) + (Palettenlänge * 1.5 Abstandsfaktor)
     const offset = lastPallet ? lastPallet.drawingOffsetX + (pal_L / SCALE_FACTOR) * 1.5 : 0;
     
     return {
@@ -211,7 +256,7 @@ window.visualizePackage = function() {
     clearScene();
 
     if (articlesToLoad.length === 0) {
-        drawBox(paletteBase, 0, 0, 0);
+        drawPalletRealistic(paletteBase, 0, 0, 0); // Geänderte Funktion
         document.getElementById('stat-l').innerText = `${pal_L} cm`;
         document.getElementById('stat-b').innerText = `${pal_B} cm`;
         document.getElementById('stat-h').innerText = `${paletteBase.H.toFixed(1)} cm`;
@@ -237,119 +282,113 @@ window.visualizePackage = function() {
         
         let currentPallet = pallets[pallets.length - 1];
 
-        // LOGIK FÜR EXTREME LÄNGE (NEUE PALETTE, KEINE OPTIMIERUNG)
-        if (item.L > pal_L || item.B > pal_B) { // Wenn Artikel die Paletten-Basis überragt
+        while(!placed) {
+            
+            let nextStackHeight = currentPallet.currentH; 
+            if (currentPallet.isLayerFull) {
+                nextStackHeight = currentPallet.currentH + currentPallet.layerHeight;
+            }
+            
+            const heightOkay = nextStackHeight + item.H <= MAX_PALETTE_H;
             
             const newMaxL = Math.max(currentPallet.maxL, item.L);
             const newMaxB = Math.max(currentPallet.maxB, item.B);
-            const heightOkay = currentPallet.currentH + item.H <= MAX_PALETTE_H;
-
-            if (newMaxL <= MAX_PALETTE_L && newMaxB <= MAX_PALETTE_B && heightOkay && currentPallet.items.length === 0) {
-                // Darf nur auf leere Palette und nur zentriert
-                currentPallet.items.push({ item, posL: 0, posZ: 0, posH: currentPallet.currentH });
-                currentPallet.layerHeight = item.H;
-                currentPallet.currentH += item.H; 
-                currentPallet.maxL = newMaxL;
-                currentPallet.maxB = newMaxB;
-                placed = true;
-            } else {
-                // ZU GROSS oder Palette bereits belegt -> Neue Palette erzwingen
-                let lastPallet = pallets[pallets.length - 1];
-                currentPallet = createNewPallet(pallets.length + 1, paletteBase, lastPallet);
-                pallets.push(currentPallet);
-                i--; // Artikel muss erneut geladen werden
-                continue;
-            }
-        }
-        
-        // LOGIK FÜR KLEINERE ARTIKEL (< 120cm) UND STAPELOPTIMIERUNG
-        else {
-            while(!placed) {
-                
-                let nextStackHeight = currentPallet.currentH; 
-                if (currentPallet.isLayerFull) {
-                    nextStackHeight = currentPallet.currentH + currentPallet.layerHeight;
-                }
-                
-                const heightOkay = nextStackHeight + item.H <= MAX_PALETTE_H;
-                
-                // 1. Prüfen, ob Stapelung oder Basis-Füllung möglich ist
-                if (currentPallet.items.length === 0 && item.L <= pal_L && item.B <= pal_B) {
-                    // Item ist klein und Palette leer: Beginne normale Flächenfüllung (zentriert)
+            const maxDimensionOkay = newMaxL <= MAX_PALETTE_L && newMaxB <= MAX_PALETTE_B;
+            
+            
+            // 1. PALETTE IST LEER (Zentriertes Laden für Overhang)
+            if (currentPallet.items.length === 0) {
+                if (heightOkay && maxDimensionOkay) {
                     currentPallet.items.push({ item, posL: 0, posZ: 0, posH: currentPallet.currentH });
                     currentPallet.layerHeight = item.H;
                     currentPallet.currentH = nextStackHeight; 
-                    currentPallet.maxL = pal_L; 
-                    currentPallet.maxB = pal_B;
+                    currentPallet.maxL = newMaxL;
+                    currentPallet.maxB = newMaxB;
                     placed = true;
                     currentPallet.isLayerFull = false; 
-                } 
-                else if (!currentPallet.isLayerFull) {
+                } else {
+                    break; 
+                }
+                
+            } 
+            // 2. PALETTE WIRD GEFÜLLT (Basisfläche / Schicht)
+            else if (!currentPallet.isLayerFull) {
 
-                    const remainingL = (pal_L / 2) - currentPallet.xCursor; 
-                    const fitsInCurrentRow = item.L <= remainingL;
-                    const remainingB = (pal_B / 2) - currentPallet.maxZInRow;
-                    const fitsInNewRow = item.B <= remainingB;
+                const remainingL = (pal_L / 2) - currentPallet.xCursor; 
+                const fitsInCurrentRow = item.L <= remainingL;
+                const remainingB = (pal_B / 2) - currentPallet.maxZInRow;
+                const fitsInNewRow = item.B <= remainingB;
 
-                    if (fitsInCurrentRow) {
-                        // 1a. PLATZIERUNG IN AKTUELLE REIHE
-                        const posL = currentPallet.xCursor + (item.L / 2); 
-                        const posZ = currentPallet.zCursor + (item.B / 2); 
-                        
-                        currentPallet.items.push({ item, posL, posZ, posH: currentPallet.currentH });
-                        currentPallet.xCursor += item.L;
-                        currentPallet.maxZInRow = Math.max(currentPallet.maxZInRow, currentPallet.zCursor + item.B);
-                        placed = true;
-                        
-                    } else if (fitsInNewRow) {
-                        // 2a. NEUE REIHE STARTEN
-                        currentPallet.zCursor = currentPallet.maxZInRow; 
-                        currentPallet.xCursor = -pal_L / 2; 
-                        
-                    } else {
-                        // 3a. BASIFLÄCHE DER AKTUELLEN SCHICHT IST VOLL
-                        currentPallet.isLayerFull = true;
-                        currentPallet.currentH += currentPallet.layerHeight; 
-                        
-                        // NEUE HÖHE PRÜFEN
-                        if (currentPallet.currentH + item.H > MAX_PALETTE_H) {
-                            break; 
-                        }
-                        
-                        // Setze Cursor für neue Schicht zurück
-                        currentPallet.xCursor = -pal_L / 2; 
-                        currentPallet.zCursor = -pal_B / 2;
-                        currentPallet.maxZInRow = -pal_B / 2;
-                        currentPallet.layerHeight = item.H; 
-                        currentPallet.isLayerFull = false;
+                if (fitsInCurrentRow) {
+                    // 1a. PLATZIERUNG IN AKTUELLE REIHE
+                    const posL = currentPallet.xCursor + (item.L / 2); 
+                    const posZ = currentPallet.zCursor + (item.B / 2); 
+
+                    // Overhang-Check: Prüfung gegen 240/160
+                    const currentMaxL = Math.max(currentPallet.maxL, pal_L/2 + posL + item.L/2);
+                    const currentMaxB = Math.max(currentPallet.maxB, pal_B/2 + posZ + item.B/2);
+                    
+                    if(currentMaxL > MAX_PALETTE_L || currentMaxB > MAX_PALETTE_B) {
+                        break; 
                     }
-                } 
-                // 3. Wenn die Palette voll ist (Höhe reicht nicht)
-                else {
-                    // HÖHEN-PRIORITÄTS-LOGIK: Stapelung erzwingen
-                    if (heightOkay) {
-                        currentPallet.isLayerFull = true;
-                        currentPallet.currentH += currentPallet.layerHeight; 
-                        
-                        currentPallet.xCursor = -pal_L / 2; 
-                        currentPallet.zCursor = -pal_B / 2;
-                        currentPallet.maxZInRow = -pal_B / 2;
-                        currentPallet.layerHeight = item.H; 
-                        currentPallet.isLayerFull = false;
-                        
-                    } else {
-                        break; // Weder Basis noch Stapelung möglich -> Neue Palette
+                    
+                    currentPallet.items.push({ item, posL, posZ, posH: currentPallet.currentH });
+                    
+                    currentPallet.xCursor += item.L;
+                    currentPallet.maxZInRow = Math.max(currentPallet.maxZInRow, currentPallet.zCursor + item.B);
+                    currentPallet.maxL = currentMaxL; 
+                    currentPallet.maxB = currentMaxB;
+                    placed = true;
+                    
+                } else if (fitsInNewRow) {
+                    // 2a. NEUE REIHE STARTEN
+                    currentPallet.zCursor = currentPallet.maxZInRow; 
+                    currentPallet.xCursor = -pal_L / 2; 
+                    
+                } else {
+                    // 3a. BASIFLÄCHE DER AKTUELLEN SCHICHT IST VOLL
+                    currentPallet.isLayerFull = true;
+                    currentPallet.currentH += currentPallet.layerHeight; // Erhöhe die Höhe der Palette
+                    
+                    // NEUE HÖHE PRÜFEN
+                    if (currentPallet.currentH + item.H > MAX_PALETTE_H) {
+                        break; 
                     }
+                    
+                    // Setze Cursor für neue Schicht zurück
+                    currentPallet.xCursor = -pal_L / 2; 
+                    currentPallet.zCursor = -pal_B / 2;
+                    currentPallet.maxZInRow = -pal_B / 2;
+                    currentPallet.layerHeight = item.H; // Neue Schichthöhe definieren
+                    currentPallet.isLayerFull = false;
+                    
+                }
+            } 
+            // 3. Wenn die Palette voll ist (Höhe reicht nicht)
+            else {
+                // HÖHEN-PRIORITÄTS-LOGIK: Stapelung erzwingen
+                if (heightOkay) {
+                    currentPallet.isLayerFull = true;
+                    currentPallet.currentH += currentPallet.layerHeight; 
+                    
+                    currentPallet.xCursor = -pal_L / 2; 
+                    currentPallet.zCursor = -pal_B / 2;
+                    currentPallet.maxZInRow = -pal_B / 2;
+                    currentPallet.layerHeight = item.H; 
+                    currentPallet.isLayerFull = false;
+                    
+                } else {
+                    break; // Weder Basis noch Stapelung möglich -> Neue Palette
                 }
             }
-            
-            // Wenn der Artikel am Ende des Loops nicht platziert wurde, neue Palette starten
-            if (!placed) {
-                let lastPallet = pallets[pallets.length - 1];
-                currentPallet = createNewPallet(pallets.length + 1, paletteBase, lastPallet);
-                pallets.push(currentPallet);
-                i--; // Artikel muss erneut geladen werden
-            }
+        }
+        
+        // Wenn der Artikel am Ende des Loops nicht platziert wurde, neue Palette starten
+        if (!placed) {
+            let lastPallet = pallets[pallets.length - 1];
+            currentPallet = createNewPallet(pallets.length + 1, paletteBase, lastPallet);
+            pallets.push(currentPallet);
+            i--; // Artikel muss erneut geladen werden
         }
     }
     
@@ -363,7 +402,7 @@ window.visualizePackage = function() {
         const offsetX = pallet.drawingOffsetX;
         const offsetZ = pallet.drawingOffsetZ;
         
-        drawBox(paletteBase, 0, offsetX, offsetZ); 
+        drawPalletRealistic(paletteBase, 0, offsetX, offsetZ); // Geänderte Funktion
 
         let palletTotalWeight = paletteBase.Gewicht;
         let palletMaxH = paletteBase.H;
@@ -449,5 +488,4 @@ function displaySidebar(pallets) {
 
 // Initialisiere die UI beim Laden der Seite
 updateLoadList();
-
 loadAndParseCSV();
