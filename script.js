@@ -4,9 +4,9 @@ let articlesToLoad = [];
 const CSV_FILE_PATH = 'stammdaten.csv';
 
 // Maximale Paletten-Dimensionen (Hardcoded Logik für Kapazitätsprüfung)
-const MAX_PALETTE_L = 285;
-const MAX_PALETTE_B = 160;
-const MAX_PALETTE_H = 160;
+const MAX_PALETTE_L = 295;
+const MAX_PALETTE_B = 180;
+const MAX_PALETTE_H = 210;
 
 // Three.js Konstanten
 let scene, camera, renderer, controls;
