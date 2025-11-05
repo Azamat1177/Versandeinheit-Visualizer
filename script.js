@@ -280,6 +280,9 @@ function createNewPallet(id, paletteBase, lastPallet = null) {
     };
 }
 
+// --- 5. LOGIK FÜR STAPELUNG & MULTI-PALETTEN ---
+// ... (createNewPallet Funktion bleibt unverändert) ...
+
 window.visualizePackage = function() {
     if (Object.keys(itemData).length === 0) return;
 
@@ -290,6 +293,7 @@ window.visualizePackage = function() {
     clearScene();
 
     if (articlesToLoad.length === 0) {
+        // ... (Logik für leere Ladung) ...
         drawPalletRealistic(paletteBase, 0, 0, 0);
         document.getElementById('stat-l').innerText = `${pal_L} cm`;
         document.getElementById('stat-b').innerText = `${pal_B} cm`;
@@ -323,8 +327,10 @@ window.visualizePackage = function() {
                 nextStackHeight = currentPallet.currentH + currentPallet.layerHeight;
             }
             
+            // HÖHEN-PRÜFUNG IST KRITISCH
             const heightOkay = nextStackHeight + item.H <= MAX_PALETTE_H;
             
+            // Plausibilitäts-Checks (Overhang)
             const newMaxL = Math.max(currentPallet.maxL, item.L);
             const newMaxB = Math.max(currentPallet.maxB, item.B);
             const maxDimensionOkay = newMaxL <= MAX_PALETTE_L && newMaxB <= MAX_PALETTE_B;
@@ -335,7 +341,7 @@ window.visualizePackage = function() {
                 if (heightOkay && maxDimensionOkay) {
                     currentPallet.items.push({ item, posL: 0, posZ: 0, posH: currentPallet.currentH });
                     currentPallet.layerHeight = item.H;
-                    currentPallet.currentH = nextStackHeight; 
+                    currentPallet.currentH = nextStackHeight + item.H; // FIX: currentH sofort aktualisieren
                     currentPallet.maxL = newMaxL;
                     currentPallet.maxB = newMaxB;
                     placed = true;
@@ -347,6 +353,9 @@ window.visualizePackage = function() {
             } 
             // 2. PALETTE WIRD GEFÜLLT (Basisfläche / Schicht)
             else if (!currentPallet.isLayerFull) {
+                
+                // MUSS Höhe prüfen, bevor wir überhaupt mit Platzierung weitermachen (verhindert Überlauf)
+                if (!heightOkay) break; 
 
                 const remainingL = (pal_L / 2) - currentPallet.xCursor; 
                 const fitsInCurrentRow = item.L <= remainingL;
@@ -383,18 +392,15 @@ window.visualizePackage = function() {
                 } else {
                     // 3a. BASIFLÄCHE DER AKTUELLEN SCHICHT IST VOLL
                     currentPallet.isLayerFull = true;
-                    currentPallet.currentH += currentPallet.layerHeight; // Erhöhe die Höhe der Palette
-                    
-                    // NEUE HÖHE PRÜFEN
-                    if (currentPallet.currentH + item.H > MAX_PALETTE_H) {
-                        break; 
-                    }
+                    currentPallet.currentH = nextStackHeight + currentPallet.layerHeight; // FIX: Höhe richtig erhöhen
+
+                    // NEUE HÖHE PRÜFEN MUSS HIER NICHT ERFOLGEN, DA ES SCHON AM ANFANG DES LOOPS GESCHIEHT
                     
                     // Setze Cursor für neue Schicht zurück
                     currentPallet.xCursor = -pal_L / 2; 
                     currentPallet.zCursor = -pal_B / 2;
                     currentPallet.maxZInRow = -pal_B / 2;
-                    currentPallet.layerHeight = item.H; // Neue Schichthöhe definieren
+                    currentPallet.layerHeight = item.H; // Neue Schichthöhe definieren (basierend auf aktuellem Item)
                     currentPallet.isLayerFull = false;
                     
                 }
@@ -403,8 +409,9 @@ window.visualizePackage = function() {
             else {
                 // HÖHEN-PRIORITÄTS-LOGIK: Stapelung erzwingen
                 if (heightOkay) {
+                    // FALSCHE STAPELUNG (Sollte nicht passieren, aber zur Sicherheit)
                     currentPallet.isLayerFull = true;
-                    currentPallet.currentH += currentPallet.layerHeight; 
+                    currentPallet.currentH = nextStackHeight + currentPallet.layerHeight; // FIX: Höhe richtig erhöhen
                     
                     currentPallet.xCursor = -pal_L / 2; 
                     currentPallet.zCursor = -pal_B / 2;
@@ -427,30 +434,29 @@ window.visualizePackage = function() {
         }
     }
     
-    // --- 7. RENDERING & DATEN-AGGREGATION ---
+    // --- 7. RENDERING & DATEN-AGGREGATION (FIX: currentH korrekt berechnen) ---
     let overallMaxH = 0;
     let totalOverallWeight = 0;
     
     pallets.forEach(pallet => {
-        const pL_scaled = pal_L / SCALE_FACTOR;
-        const pB_scaled = pal_B / SCALE_FACTOR;
         const offsetX = pallet.drawingOffsetX;
         const offsetZ = pallet.drawingOffsetZ;
         
-        drawPalletRealistic(paletteBase, 0, offsetX, offsetZ); // Geänderte Funktion
+        drawPalletRealistic(paletteBase, 0, offsetX, offsetZ); 
 
         let palletTotalWeight = paletteBase.Gewicht;
         let palletMaxH = paletteBase.H;
         
         pallet.items.forEach(pItem => {
-            const h_scaled = pItem.posH / SCALE_FACTOR;
+            const h_scaled = pItem.posH / SCALE_FACTOR; // Dies ist die BASIS-Höhe des Kastens
+            
             const l_scaled = pItem.posL / SCALE_FACTOR;
             const z_scaled = pItem.posZ / SCALE_FACTOR;
 
             drawBox(pItem.item, h_scaled, pItem.posL / SCALE_FACTOR + offsetX, pItem.posZ / SCALE_FACTOR + offsetZ);
             
             palletTotalWeight += pItem.item.Gewicht;
-            palletMaxH = Math.max(palletMaxH, pItem.posH + pItem.item.H);
+            palletMaxH = Math.max(palletMaxH, pItem.posH + pItem.item.H); // Die korrekte maximale Höhe
         });
         
         pallet.finalWeight = palletTotalWeight;
@@ -459,8 +465,8 @@ window.visualizePackage = function() {
         overallMaxH = Math.max(overallMaxH, palletMaxH);
     });
 
-    // --- 8. STATISTIKEN & KAMERA ---
-
+    // --- 8. STATISTIKEN & KAMERA (Unverändert) ---
+    // ... (Der Rest des Codes zur Statistik-Anzeige und Kamerasteuerung bleibt unverändert) ...
     const overallMaxH_scaled = overallMaxH / SCALE_FACTOR;
 
     const finalL = pallets.reduce((max, p) => Math.max(max, p.maxL), pal_L);
@@ -524,3 +530,4 @@ function displaySidebar(pallets) {
 // Initialisiere die UI beim Laden der Seite
 updateLoadList();
 loadAndParseCSV();
+
