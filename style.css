@@ -1,298 +1,342 @@
-:root {
-    --primary-color: #007bff;
-    --primary-light: #e6f0ff;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --background-color: #f4f7fa;
-    --card-background: #ffffff;
-    --text-color: #333;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Etwas dunklerer Schatten */
-}
-
-* {
-    box-sizing: border-box;
+/* Grundlegende Stildefinitionen */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
-    background-color: var(--background-color);
-    color: var(--text-color);
+    background-color: #f4f7fa;
+    color: #333;
     line-height: 1.6;
-    padding: 20px;
 }
 
-header {
-    text-align: center;
-    padding: 20px 0;
-    margin-bottom: 20px;
-    background-color: var(--card-background);
-    box-shadow: var(--shadow);
-    border-radius: 8px;
-}
-
-h1 {
-    color: var(--primary-color);
-}
-
-main {
+#app-container {
+    display: flex;
+    flex-direction: column; /* Standard: Spaltenlayout für kleine Bildschirme */
     max-width: 1200px;
     margin: 0 auto;
+    padding: 15px;
+    gap: 20px; /* Abstand zwischen den Hauptsektionen */
 }
 
-.card {
-    background-color: var(--card-background);
-    padding: 20px;
+/* Header-Stile */
+#app-header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px 15px;
+    text-align: center;
     border-radius: 8px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
 
-/* --- Layout für Sidebar und Hauptinhalt --- */
-.main-layout {
-    display: flex;
-    gap: 20px;
+#app-header h1 {
+    margin: 0;
+    font-size: 1.8em;
 }
 
-#sidebar {
-    width: 280px; /* Sidebar etwas breiter */
-    min-width: 280px;
-    height: fit-content; 
-    position: sticky; 
-    top: 20px;
-    padding: 0; 
-    overflow: hidden;
+/* Allgemeine Sektions-Stile */
+.section-card {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-#sidebar h2 {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 15px 20px;
-    margin-bottom: 0;
+.section-card h2 {
+    color: #007bff;
+    margin-top: 0;
+    font-size: 1.4em;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Paletten-Sektion */
+#pallets-section {
+    flex: 1; /* Nimmt verfügbaren Platz ein */
 }
 
 #palletContent {
-    padding: 15px 20px;
-}
-
-.main-content {
-    flex-grow: 1;
-}
-
-.section-title {
-    color: var(--primary-color);
-    margin-bottom: 10px;
-    font-size: 1.3em;
-}
-
-/* --- Eingabe-Bereich --- */
-.input-section h3 {
-    padding-top: 15px;
-    margin-top: 15px;
-    border-top: 1px solid #ddd;
-    margin-bottom: 10px;
-    color: var(--text-color);
-    font-size: 1.1em;
-}
-
-.input-group {
     display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+    flex-direction: column; /* Stapeln auf Mobilgeräten */
+    gap: 15px;
 }
 
-.input-group input {
+.pallet-entry {
+    background-color: #e9f5ff;
+    border: 1px solid #cceeff;
+    border-radius: 5px;
+    padding: 15px;
+    font-size: 0.95em;
+}
+
+.pallet-entry strong {
+    color: #0056b3;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.pallet-entry ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.pallet-entry ul li {
+    margin-bottom: 3px;
+}
+
+.pallet-entry p {
+    margin: 5px 0 0;
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Artikel-Zur-Ladung-Sektion */
+#add-item-section {
+    flex: 1; /* Nimmt verfügbaren Platz ein */
+}
+
+#add-item-form {
+    display: flex;
+    flex-direction: column; /* Stapeln auf Mobilgeräten */
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#add-item-form input[type="text"],
+#add-item-form input[type="number"] {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    flex-grow: 1; 
+    font-size: 1em;
+    width: 100%; /* Volle Breite auf Mobilgeräten */
+    box-sizing: border-box; /* Padding und Border werden in die Breite einberechnet */
 }
 
-/* Aktions-Buttons */
-button {
-    color: white;
+#add-item-form button {
     padding: 10px 15px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s;
-    font-weight: 600;
+    font-size: 1em;
+    font-weight: bold;
+    color: white;
+    background-color: #28a745; /* Grün für Hinzufügen */
+    transition: background-color 0.2s ease;
+    width: 100%; /* Volle Breite auf Mobilgeräten */
 }
 
-.add-button {
-    background-color: var(--success-color);
+#add-item-form button:hover {
+    background-color: #218838;
 }
 
-.add-button:hover {
-    background-color: #1e7e34;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.visualize-button {
-    background-color: var(--primary-color);
-    flex-grow: 1;
-}
-
-.clear-button {
-    background-color: var(--danger-color); 
-    width: 40%;
-}
-
-.visualize-button:hover {
-    background-color: #0056b3;
-}
-
-.clear-button:hover {
-    background-color: #c82333;
-}
-
-/* --- Ladungsliste (Aktuelle Ladung) --- */
-.load-list {
+/* Aktuelle Ladung Liste */
+#currentLoadList {
     list-style: none;
     padding: 0;
-    margin-bottom: 15px;
-    max-height: 180px; 
-    overflow-y: auto;
-    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+#currentLoadList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 8px;
     border-radius: 4px;
 }
 
-.load-list li {
-    padding: 8px 10px;
-    border-bottom: 1px dotted #eee;
-    display: flex; 
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.95em;
+#currentLoadList li button {
+    background-color: #dc3545; /* Rot für Entfernen */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Runde Form */
+    width: 28px;
+    height: 28px;
+    font-size: 0.9em;
+    cursor: pointer;
+    margin-left: 10px;
+    flex-shrink: 0; /* Verhindert, dass der Button schrumpft */
 }
 
-.load-list li:hover {
-    background-color: var(--primary-light);
-}
-
-.load-list li:last-child {
-    border-bottom: none;
-}
-
-.load-list button {
-    background: none; 
-    border: none; 
-    color: var(--danger-color); 
-    cursor: pointer; 
-    padding: 0 5px;
-    font-weight: bold;
-    font-size: 1.1em;
-    opacity: 0.7;
-}
-
-.load-list button:hover {
-    opacity: 1;
+#currentLoadList li button:hover {
+    background-color: #c82333;
 }
 
 .note-list {
     color: #666;
     font-style: italic;
     text-align: center;
-    padding: 10px;
-}
-
-
-/* --- Paletten-Sidebar-Einträge --- */
-.pallet-entry {
-    border: 1px solid var(--primary-light);
-    padding: 10px;
-    margin-top: 10px;
+    padding: 15px;
+    background-color: #f0f0f0;
     border-radius: 4px;
-    background-color: var(--primary-light);
-    transition: box-shadow 0.2s;
 }
 
-.pallet-entry:hover {
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-}
-
-.pallet-entry strong {
-    color: var(--primary-color);
-    display: block;
-    margin-bottom: 5px;
-    font-size: 1.1em;
-}
-
-.pallet-entry ul {
-    list-style: none;
-    padding-left: 0;
-    margin-top: 5px;
-}
-
-.pallet-entry li {
-    font-size: 0.9em;
-    color: #555;
-    margin-left: 5px;
-}
-
-.pallet-entry p {
-    font-weight: 600;
-    margin-top: 5px;
-    border-top: 1px dotted rgba(0, 123, 255, 0.3);
-    padding-top: 5px;
-    font-size: 0.9em;
-}
-
-/* --- Anzeige-Sektion --- */
-.display-section {
+/* Kontroll-Buttons für Ladung */
+#load-controls {
     display: flex;
-    gap: 20px;
+    flex-direction: column; /* Stapeln auf Mobilgeräten */
+    gap: 10px;
+}
+
+#load-controls button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.05em;
+    font-weight: bold;
+    color: white;
+    transition: background-color 0.2s ease;
+    width: 100%; /* Volle Breite auf Mobilgeräten */
+}
+
+#load-controls button#visualizeButton {
+    background-color: #007bff; /* Blau für Visualisieren */
+}
+
+#load-controls button#visualizeButton:hover {
+    background-color: #0056b3;
+}
+
+#load-controls button#clearLoadButton {
+    background-color: #dc3545; /* Rot für Löschen */
+}
+
+#load-controls button#clearLoadButton:hover {
+    background-color: #c82333;
+}
+
+/* Visualizer-Sektion */
+#visualizer-section {
+    flex: 2; /* Nimmt mehr Platz ein auf größeren Bildschirmen */
 }
 
 #visualizer {
-    width: 65%; 
-    height: 400px; 
-    min-width: 400px; 
-    padding: 0; 
-    overflow: hidden;
+    width: 100%;
+    height: 400px; /* Feste Höhe für den 3D-Container */
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    overflow: hidden; /* Stellt sicher, dass 3D-Inhalt innerhalb bleibt */
 }
 
-#stats {
-    width: 35%;
-    display: flex;
-    flex-direction: column;
+/* Maße & Gewicht Sektion */
+#stats-section {
+    flex: 1; /* Nimmt verfügbaren Platz ein */
 }
 
-#stats h2 {
-    color: var(--primary-color);
-    margin-bottom: 15px;
+#stats-section p {
+    margin: 8px 0;
+    font-size: 0.95em;
 }
 
-/* Responsive Anpassung */
-@media (max-width: 1024px) {
-    .main-layout {
+#stats-section strong {
+    color: #007bff;
+    display: inline-block;
+    width: 80px; /* Für bessere Ausrichtung der Werte */
+}
+
+.note {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+
+
+/* --- Media Queries für Desktop-Ansicht (ab 768px Breite) --- */
+@media (min-width: 768px) {
+    #app-container {
+        flex-direction: row; /* Seitenleisten nebeneinander */
+        justify-content: space-between;
+        align-items: flex-start; /* Oben ausrichten */
+    }
+
+    /* Linke Seitenleiste für Paletten und Eingabe */
+    #left-sidebar {
+        display: flex;
         flex-direction: column;
+        width: 300px; /* Feste Breite für die Seitenleiste */
+        gap: 20px;
+        flex-shrink: 0; /* Verhindert, dass die Seitenleiste schrumpft */
     }
-    #sidebar {
-        width: 100%;
-        min-width: auto;
-        position: static;
+
+    /* Hauptinhalt für Visualizer und Statistiken */
+    #main-content {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1; /* Nimmt den restlichen Platz ein */
+        gap: 20px;
+    }
+
+    /* Rechte Seitenleiste für Statistiken (optional, wenn extra) */
+    #right-sidebar {
+        display: flex;
+        flex-direction: column;
+        width: 250px; /* Feste Breite für die Seitenleiste */
+        gap: 20px;
+        flex-shrink: 0;
+    }
+
+    /* Flex-Anpassung für Formularelemente im Desktop */
+    #add-item-form {
+        flex-direction: row; /* Elemente nebeneinander */
+        flex-wrap: wrap; /* Umbruch bei Platzmangel */
+        align-items: center;
+    }
+    #add-item-form input {
+        flex-grow: 1; /* Inputs nehmen verfügbaren Platz ein */
+        width: auto; /* Überschreibt 100% Breite */
+    }
+    #add-item-form button {
+        width: auto; /* Überschreibt 100% Breite */
+        flex-shrink: 0; /* Button schrumpft nicht */
+    }
+    /* Spezifische Breiten für Inputs im Desktop, damit sie nicht zu breit werden */
+    #articleInput {
+        max-width: 150px; 
+    }
+    #quantityInput {
+        max-width: 60px;
+    }
+
+
+    #load-controls {
+        flex-direction: row; /* Buttons nebeneinander */
+        justify-content: flex-start;
+    }
+    #load-controls button {
+        width: auto; /* Buttons haben ihre natürliche Breite */
+        flex-grow: 0; /* Wachsen nicht über Notwendigkeit hinaus */
+    }
+    
+    #visualizer {
+        height: 600px; /* Höher auf Desktop */
     }
 }
 
-@media (max-width: 768px) {
-    .display-section {
-        flex-direction: column;
+/* Zusätzliche Anpassungen für sehr kleine Bildschirme (Handy quer) */
+@media (max-width: 480px) {
+    #app-header h1 {
+        font-size: 1.5em;
     }
-    #visualizer, #stats {
-        width: 100%;
-        height: 300px; 
+    .section-card {
+        padding: 15px;
     }
-    .action-buttons {
-        flex-direction: column;
+    .section-card h2 {
+        font-size: 1.2em;
+        margin-bottom: 15px;
     }
-    .clear-button {
-        width: 100%;
+    #currentLoadList li {
+        flex-wrap: wrap; /* Artikeltexte können umbrechen */
+        font-size: 0.9em;
+    }
+    #currentLoadList li button {
+        margin-top: 5px; /* Abstand, wenn umgebrochen */
     }
 }
