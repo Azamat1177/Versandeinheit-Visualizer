@@ -12,56 +12,65 @@
 </head>
 <body>
 
-    <header>
+    <header id="app-header">
         <h1>Versandeinheit Visualizer</h1>
     </header>
 
-    <main>
-        <div class="main-layout">
-            <section id="sidebar" class="card">
+    <main id="app-container">
+        
+        <div id="left-sidebar">
+            
+            <section id="pallets-section" class="section-card">
                 <h2>Paletten (Ladung)</h2>
                 <div id="palletContent">
-                    <p class="note">Die Palettenstruktur wird hier angezeigt...</p>
+                    <p class="note">Keine Ladung vorhanden.</p>
                 </div>
             </section>
+
             
-            <div class="main-content">
-                <section class="input-section card">
-                    <h2 class="section-title">Artikel zur Ladung hinzufügen</h2>
-                    <div class="input-group">
-                        <input type="text" id="articleInput" placeholder="Artikel-Nr. (z.B. 02-0036)">
-                        <input type="number" id="quantityInput" placeholder="Menge" value="1" min="1" style="width: 80px;">
-                        <button onclick="addToLoad()" class="add-button">Hinzufügen</button>
-                    </div>
-                    
-                    <h3 class="section-title">Aktuelle Ladung</h3>
-                    <ul id="currentLoadList" class="load-list">
-                        <li class="note-list">Noch keine Artikel hinzugefügt.</li>
-                    </ul>
+            <section id="add-item-section" class="section-card">
+                <h2>Artikel zur Ladung hinzufügen</h2>
+                <div id="add-item-form">
+                    <input type="text" id="articleInput" placeholder="Artikel-Nr. (z.B. 02-0036)">
+                    <input type="number" id="quantityInput" value="1" min="1">
+                    <button onclick="addToLoad()">Hinzufügen</button>
+                </div>
 
-                    <div class="action-buttons">
-                        <button onclick="visualizePackage()" class="visualize-button">▶️ Visualisieren</button>
-                        <button onclick="clearLoad()" class="clear-button">Ladung löschen</button>
-                    </div>
-                </section>
+                <h3>Aktuelle Ladung</h3>
+                <ul id="currentLoadList">
+                    <li class="note-list">Noch keine Artikel hinzugefügt.</li>
+                </ul>
 
-                <section class="display-section">
-                    <div id="visualizer" class="card"></div>
-                    
-                    <div id="stats" class="card">
-                        <h2>📦 Maße & Gewicht</h2>
-                        <p><strong>Gesamtlänge (L):</strong> <span id="stat-l">...</span></p>
-                        <p><strong>Gesamtbreite (B):</strong> <span id="stat-b">...</span></p>
-                        <p><strong>Gesamthöhe (H):</strong> <span id="stat-h">...</span></p>
-                        <hr>
-                        <p><strong>Gesamtgewicht:</strong> <span id="stat-weight">...</span></p>
-                        <p class="note">Werte basieren auf einer Euro-Palette (120x120x14.4 cm).</p>
+                <div id="load-controls">
+                    <button id="visualizeButton" onclick="visualizePackage()">Visualisieren</button>
+                    <button id="clearLoadButton" onclick="clearLoad()">Ladung löschen</button>
+                </div>
+            </section>
+        </div>
+
+        
+        <div id="main-content">
+            
+            <section id="visualizer-section" class="section-card">
+                <h2>3D-Visualisierung</h2>
+                <div id="visualizer">
                     </div>
-                </section>
-            </div>
+            </section>
         </div>
         
-        </main>
+        <div id="right-sidebar">
+            
+            <section id="stats-section" class="section-card">
+                <h2>📦 Maße & Gewicht</h2>
+                <p><strong>Gesamtlänge (L):</strong> <span id="stat-l">0.0 cm</span></p>
+                <p><strong>Gesamtbreite (B):</strong> <span id="stat-b">0.0 cm</span></p>
+                <p><strong>Gesamthöhe (H):</strong> <span id="stat-h">0.0 cm</span></p>
+                <hr>
+                <p><strong>Gesamtgewicht:</strong> <span id="stat-weight">0.0 kg</span></p>
+                <p class="note">Werte basieren auf einer Euro-Palette (120x120x14.4 cm).</p>
+            </section>
+        </div>
+    </main>
 
     <script src="script.js"></script>
 </body>
