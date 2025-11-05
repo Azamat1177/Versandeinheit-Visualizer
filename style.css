@@ -1,0 +1,298 @@
+:root {
+    --primary-color: #007bff;
+    --primary-light: #e6f0ff;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --background-color: #f4f7fa;
+    --card-background: #ffffff;
+    --text-color: #333;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Etwas dunklerer Schatten */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    padding: 20px 0;
+    margin-bottom: 20px;
+    background-color: var(--card-background);
+    box-shadow: var(--shadow);
+    border-radius: 8px;
+}
+
+h1 {
+    color: var(--primary-color);
+}
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.card {
+    background-color: var(--card-background);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+/* --- Layout für Sidebar und Hauptinhalt --- */
+.main-layout {
+    display: flex;
+    gap: 20px;
+}
+
+#sidebar {
+    width: 280px; /* Sidebar etwas breiter */
+    min-width: 280px;
+    height: fit-content; 
+    position: sticky; 
+    top: 20px;
+    padding: 0; 
+    overflow: hidden;
+}
+
+#sidebar h2 {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 20px;
+    margin-bottom: 0;
+}
+
+#palletContent {
+    padding: 15px 20px;
+}
+
+.main-content {
+    flex-grow: 1;
+}
+
+.section-title {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 1.3em;
+}
+
+/* --- Eingabe-Bereich --- */
+.input-section h3 {
+    padding-top: 15px;
+    margin-top: 15px;
+    border-top: 1px solid #ddd;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-size: 1.1em;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.input-group input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex-grow: 1; 
+}
+
+/* Aktions-Buttons */
+button {
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-weight: 600;
+}
+
+.add-button {
+    background-color: var(--success-color);
+}
+
+.add-button:hover {
+    background-color: #1e7e34;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.visualize-button {
+    background-color: var(--primary-color);
+    flex-grow: 1;
+}
+
+.clear-button {
+    background-color: var(--danger-color); 
+    width: 40%;
+}
+
+.visualize-button:hover {
+    background-color: #0056b3;
+}
+
+.clear-button:hover {
+    background-color: #c82333;
+}
+
+/* --- Ladungsliste (Aktuelle Ladung) --- */
+.load-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 15px;
+    max-height: 180px; 
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.load-list li {
+    padding: 8px 10px;
+    border-bottom: 1px dotted #eee;
+    display: flex; 
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95em;
+}
+
+.load-list li:hover {
+    background-color: var(--primary-light);
+}
+
+.load-list li:last-child {
+    border-bottom: none;
+}
+
+.load-list button {
+    background: none; 
+    border: none; 
+    color: var(--danger-color); 
+    cursor: pointer; 
+    padding: 0 5px;
+    font-weight: bold;
+    font-size: 1.1em;
+    opacity: 0.7;
+}
+
+.load-list button:hover {
+    opacity: 1;
+}
+
+.note-list {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 10px;
+}
+
+
+/* --- Paletten-Sidebar-Einträge --- */
+.pallet-entry {
+    border: 1px solid var(--primary-light);
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    background-color: var(--primary-light);
+    transition: box-shadow 0.2s;
+}
+
+.pallet-entry:hover {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.pallet-entry strong {
+    color: var(--primary-color);
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+}
+
+.pallet-entry ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 5px;
+}
+
+.pallet-entry li {
+    font-size: 0.9em;
+    color: #555;
+    margin-left: 5px;
+}
+
+.pallet-entry p {
+    font-weight: 600;
+    margin-top: 5px;
+    border-top: 1px dotted rgba(0, 123, 255, 0.3);
+    padding-top: 5px;
+    font-size: 0.9em;
+}
+
+/* --- Anzeige-Sektion --- */
+.display-section {
+    display: flex;
+    gap: 20px;
+}
+
+#visualizer {
+    width: 65%; 
+    height: 400px; 
+    min-width: 400px; 
+    padding: 0; 
+    overflow: hidden;
+}
+
+#stats {
+    width: 35%;
+    display: flex;
+    flex-direction: column;
+}
+
+#stats h2 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+/* Responsive Anpassung */
+@media (max-width: 1024px) {
+    .main-layout {
+        flex-direction: column;
+    }
+    #sidebar {
+        width: 100%;
+        min-width: auto;
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .display-section {
+        flex-direction: column;
+    }
+    #visualizer, #stats {
+        width: 100%;
+        height: 300px; 
+    }
+    .action-buttons {
+        flex-direction: column;
+    }
+    .clear-button {
+        width: 100%;
+    }
+}
