@@ -16,11 +16,13 @@ const SCALE_FACTOR = 100; // 1 Einheit in Three.js = 100cm (Meter)
 
 // --- 2. CSV LADEN UND PARSEN ---
 
+// --- 2. CSV LADEN UND PARSEN (Verbessert) ---
+
 async function loadAndParseCSV() {
     try {
         const response = await fetch(CSV_FILE_PATH);
         if (!response.ok) {
-             throw new Error(`Konnte CSV-Datei nicht laden.`);
+             throw new Error(`Konnte CSV-Datei nicht laden. Status: ${response.status}`);
         }
         
         const csvText = await response.text();
@@ -29,22 +31,38 @@ async function loadAndParseCSV() {
         const headers = lines[0].split(';').map(h => h.trim()); 
         
         for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(';'); 
-            if (values.length !== headers.length) continue; 
+            const rawValues = lines[i].split(';'); 
+            // Bereinigen aller Werte zuerst
+            const values = rawValues.map(v => v.trim()); 
+            
+            if (values.length !== headers.length) {
+                 console.warn(`Überspringe Zeile ${i}: Falsche Spaltenanzahl (${values.length} statt ${headers.length})`);
+                 continue;
+            }
 
-            // WICHTIG: Die Einheiten-Spalte (Index 6) ist entfernt!
+            // WICHTIG: Korrigierte 7-spaltige Struktur
             const item = {
-                'Artikel-Nr': values[0].trim(), 
-                'Name': values[1].trim(),       
-                'L': parseFloat(values[2].trim()),
-                'B': parseFloat(values[3].trim()),
-                'H': parseFloat(values[4].trim()),
-                'Gewicht': parseFloat(values[5].trim()),
-                // Einheit entfällt
-                'color': parseInt(values[6].trim(), 16) // Index 6
+                'Artikel-Nr': values[0], 
+                'Name': values[1],       
+                'L': parseFloat(values[2]), // parseFloat() funktioniert nur mit bereinigten Werten
+                'B': parseFloat(values[3]),
+                'H': parseFloat(values[4]),
+                'Gewicht': parseFloat(values[5]),
+                'color': parseInt(values[6], 16) 
             };
             
+            // Fehlerhafte Daten überspringen
+            if (isNaN(item.L) || isNaN(item.B)) {
+                console.warn(`Fehlerhafte numerische Daten in Artikel ${item['Artikel-Nr']}. Übersprungen.`);
+                continue; 
+            }
+
             itemData[item['Artikel-Nr']] = item;
+        }
+        
+        // KRITISCHE PRÜFUNG: Ist die Palette vorhanden?
+        if (!itemData['PAL-EU']) {
+            throw new Error("PAL-EU nicht in den geladenen Stammdaten gefunden.");
         }
 
         initThreeJs();
@@ -489,4 +507,5 @@ function displaySidebar(pallets) {
 // Initialisiere die UI beim Laden der Seite
 updateLoadList();
 loadAndParseCSV();
+
 
