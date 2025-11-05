@@ -5,8 +5,8 @@ const CSV_FILE_PATH = 'stammdaten.csv';
 
 // Maximale Paletten-Dimensionen
 const MAX_PALETTE_L = 285;
-const MAX_PALETTE_B = 160;
-const MAX_PALETTE_H = 160;
+const MAX_PALETTE_B = 200;
+const MAX_PALETTE_H = 200;
 
 // Three.js Konstanten
 let scene, camera, renderer, controls;
@@ -489,3 +489,4 @@ function displaySidebar(pallets) {
 // Initialisiere die UI beim Laden der Seite
 updateLoadList();
 loadAndParseCSV();
+
