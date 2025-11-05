@@ -39,8 +39,8 @@ async function loadAndParseCSV() {
                 'B': parseFloat(values[3].trim()),
                 'H': parseFloat(values[4].trim()),
                 'Gewicht': parseFloat(values[5].trim()),
-                'Einheit': values[6].trim(),    
-                'color': parseInt(values[7].trim(), 16) 
+                // Die Spalte Einheit ist entfallen
+                'color': parseInt(values[6].trim(), 16) // <-- Index von 7 auf 6 geändert
             };
             
             itemData[item['Artikel-Nr']] = item;
@@ -85,8 +85,8 @@ window.addToLoad = function() {
         return;
     }
 
-    const item = itemData[articleNr];
-    if (!item || item['Einheit'] === 'Palette') {
+   const item = itemData[articleNr];
+    if (!item || articleNr === 'PAL-EU') { // <-- NEUE, DIREKTE PRÜFUNG AUF PALETTE
         alert("Artikelnummer nicht gefunden oder ist eine Palette.");
         return;
     }
@@ -449,4 +449,5 @@ function displaySidebar(pallets) {
 
 // Initialisiere die UI beim Laden der Seite
 updateLoadList();
+
 loadAndParseCSV();
