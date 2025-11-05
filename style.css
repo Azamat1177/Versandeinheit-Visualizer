@@ -1,11 +1,43 @@
-/* Grundlegende Stildefinitionen */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+:root {
+    --primary-color: #007bff;
+    --primary-light: #e6f0ff;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --background-color: #f4f7fa;
+    --card-background: #ffffff;
+    --text-color: #333;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
+}
+
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    background-color: #f4f7fa;
-    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
     line-height: 1.6;
+}
+
+/* --- Layout-Struktur --- */
+
+#app-header {
+    background-color: var(--card-background);
+    color: var(--text-color);
+    padding: 20px 15px;
+    text-align: center;
+    border-radius: 0 0 8px 8px; /* Optische Anpassung */
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+#app-header h1 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.8em;
 }
 
 #app-container {
@@ -14,35 +46,18 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 15px;
-    gap: 20px; /* Abstand zwischen den Hauptsektionen */
+    gap: 20px;
 }
 
-/* Header-Stile */
-#app-header {
-    background-color: #007bff;
-    color: white;
-    padding: 20px 15px;
-    text-align: center;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-#app-header h1 {
-    margin: 0;
-    font-size: 1.8em;
-}
-
-/* Allgemeine Sektions-Stile */
 .section-card {
-    background-color: #ffffff;
+    background-color: var(--card-background);
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .section-card h2 {
-    color: #007bff;
+    color: var(--primary-color);
     margin-top: 0;
     font-size: 1.4em;
     border-bottom: 2px solid #e0e0e0;
@@ -50,185 +65,196 @@ body {
     margin-bottom: 20px;
 }
 
-/* Paletten-Sektion */
-#pallets-section {
-    flex: 1; /* Nimmt verfügbaren Platz ein */
+/* --- Sidebar-Elemente --- */
+
+#sidebar h2 {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 20px;
+    margin-bottom: 0;
+    border-radius: 8px 8px 0 0;
 }
 
 #palletContent {
-    display: flex;
-    flex-direction: column; /* Stapeln auf Mobilgeräten */
-    gap: 15px;
+    padding: 15px 20px;
 }
 
+/* Paletten-Sidebar-Einträge */
 .pallet-entry {
-    background-color: #e9f5ff;
-    border: 1px solid #cceeff;
-    border-radius: 5px;
-    padding: 15px;
-    font-size: 0.95em;
+    border: 1px solid var(--primary-light);
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    background-color: var(--primary-light);
+    transition: box-shadow 0.2s;
+}
+
+.pallet-entry:hover {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
 .pallet-entry strong {
-    color: #0056b3;
+    color: var(--primary-color);
     display: block;
     margin-bottom: 5px;
+    font-size: 1.1em;
 }
 
 .pallet-entry ul {
     list-style: none;
-    padding: 0;
-    margin: 10px 0;
+    padding-left: 0;
+    margin-top: 5px;
 }
 
-.pallet-entry ul li {
-    margin-bottom: 3px;
+.pallet-entry li {
+    font-size: 0.9em;
+    color: #555;
+    margin-left: 5px;
 }
 
 .pallet-entry p {
-    margin: 5px 0 0;
+    font-weight: 600;
+    margin-top: 5px;
+    border-top: 1px dotted rgba(0, 123, 255, 0.3);
+    padding-top: 5px;
     font-size: 0.9em;
-    color: #555;
 }
 
-/* Artikel-Zur-Ladung-Sektion */
-#add-item-section {
-    flex: 1; /* Nimmt verfügbaren Platz ein */
+
+/* --- Eingabe-Sektion --- */
+
+#add-item-section h3 {
+    padding-top: 15px;
+    margin-top: 15px;
+    border-top: 1px solid #ddd;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-size: 1.1em;
 }
 
 #add-item-form {
     display: flex;
-    flex-direction: column; /* Stapeln auf Mobilgeräten */
+    flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 20px;
+    align-items: center;
 }
 
-#add-item-form input[type="text"],
-#add-item-form input[type="number"] {
+#add-item-form input {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1em;
-    width: 100%; /* Volle Breite auf Mobilgeräten */
-    box-sizing: border-box; /* Padding und Border werden in die Breite einberechnet */
+    flex-grow: 1;
 }
 
-#add-item-form button {
+#articleInput {
+    flex-grow: 2;
+    min-width: 120px;
+}
+
+#quantityInput {
+    width: 60px; 
+    flex-shrink: 0;
+}
+
+/* Buttons */
+button {
+    color: white;
     padding: 10px 15px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 1em;
-    font-weight: bold;
-    color: white;
-    background-color: #28a745; /* Grün für Hinzufügen */
+    font-weight: 600;
     transition: background-color 0.2s ease;
-    width: 100%; /* Volle Breite auf Mobilgeräten */
 }
 
-#add-item-form button:hover {
-    background-color: #218838;
+.add-button {
+    background-color: var(--success-color);
+    flex-grow: 1;
+    min-width: 80px;
 }
 
-/* Aktuelle Ladung Liste */
-#currentLoadList {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 20px;
+.add-button:hover {
+    background-color: #1e7e34;
 }
 
-#currentLoadList li {
+.action-buttons {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    padding: 10px;
-    margin-bottom: 8px;
-    border-radius: 4px;
-}
-
-#currentLoadList li button {
-    background-color: #dc3545; /* Rot für Entfernen */
-    color: white;
-    border: none;
-    border-radius: 50%; /* Runde Form */
-    width: 28px;
-    height: 28px;
-    font-size: 0.9em;
-    cursor: pointer;
-    margin-left: 10px;
-    flex-shrink: 0; /* Verhindert, dass der Button schrumpft */
-}
-
-#currentLoadList li button:hover {
-    background-color: #c82333;
-}
-
-.note-list {
-    color: #666;
-    font-style: italic;
-    text-align: center;
-    padding: 15px;
-    background-color: #f0f0f0;
-    border-radius: 4px;
-}
-
-/* Kontroll-Buttons für Ladung */
-#load-controls {
-    display: flex;
-    flex-direction: column; /* Stapeln auf Mobilgeräten */
     gap: 10px;
+    margin-top: 15px;
 }
 
-#load-controls button {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1.05em;
-    font-weight: bold;
-    color: white;
-    transition: background-color 0.2s ease;
-    width: 100%; /* Volle Breite auf Mobilgeräten */
+.visualize-button {
+    background-color: var(--primary-color);
+    flex-grow: 1;
 }
 
-#load-controls button#visualizeButton {
-    background-color: #007bff; /* Blau für Visualisieren */
+.clear-button {
+    background-color: var(--danger-color); 
+    width: 40%;
 }
 
-#load-controls button#visualizeButton:hover {
+.visualize-button:hover {
     background-color: #0056b3;
 }
 
-#load-controls button#clearLoadButton {
-    background-color: #dc3545; /* Rot für Löschen */
-}
-
-#load-controls button#clearLoadButton:hover {
+.clear-button:hover {
     background-color: #c82333;
 }
 
-/* Visualizer-Sektion */
-#visualizer-section {
-    flex: 2; /* Nimmt mehr Platz ein auf größeren Bildschirmen */
+/* Ladungsliste */
+.load-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 15px;
+    max-height: 180px; 
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
+
+.load-list li {
+    padding: 8px 10px;
+    border-bottom: 1px dotted #eee;
+    display: flex; 
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95em;
+}
+
+.load-list li:hover {
+    background-color: var(--primary-light);
+}
+
+.load-list li:last-child {
+    border-bottom: none;
+}
+
+.load-list button {
+    background: none; 
+    border: none; 
+    color: var(--danger-color); 
+    padding: 0 5px;
+    font-weight: bold;
+    font-size: 1.1em;
+    opacity: 0.7;
+}
+
+/* --- Visualizer & Stats --- */
 
 #visualizer {
     width: 100%;
-    height: 400px; /* Feste Höhe für den 3D-Container */
+    height: 400px; 
     background-color: #f0f0f0;
     border-radius: 8px;
     margin-bottom: 20px;
-    overflow: hidden; /* Stellt sicher, dass 3D-Inhalt innerhalb bleibt */
-}
-
-/* Maße & Gewicht Sektion */
-#stats-section {
-    flex: 1; /* Nimmt verfügbaren Platz ein */
+    overflow: hidden;
 }
 
 #stats-section p {
+    display: flex;
+    justify-content: space-between;
     margin: 8px 0;
     font-size: 0.95em;
 }
@@ -236,7 +262,8 @@ body {
 #stats-section strong {
     color: #007bff;
     display: inline-block;
-    width: 80px; /* Für bessere Ausrichtung der Werte */
+    width: 140px; 
+    text-align: left;
 }
 
 .note {
@@ -250,93 +277,48 @@ body {
 
 
 /* --- Media Queries für Desktop-Ansicht (ab 768px Breite) --- */
+
 @media (min-width: 768px) {
     #app-container {
-        flex-direction: row; /* Seitenleisten nebeneinander */
-        justify-content: space-between;
-        align-items: flex-start; /* Oben ausrichten */
+        flex-direction: row; 
+        align-items: flex-start;
     }
 
-    /* Linke Seitenleiste für Paletten und Eingabe */
     #left-sidebar {
         display: flex;
         flex-direction: column;
-        width: 300px; /* Feste Breite für die Seitenleiste */
+        width: 320px; 
+        min-width: 320px;
         gap: 20px;
-        flex-shrink: 0; /* Verhindert, dass die Seitenleiste schrumpft */
+        flex-shrink: 0; 
+        position: sticky;
+        top: 20px;
     }
 
-    /* Hauptinhalt für Visualizer und Statistiken */
     #main-content {
         display: flex;
         flex-direction: column;
-        flex-grow: 1; /* Nimmt den restlichen Platz ein */
+        flex-grow: 1; 
         gap: 20px;
     }
-
-    /* Rechte Seitenleiste für Statistiken (optional, wenn extra) */
+    
     #right-sidebar {
         display: flex;
         flex-direction: column;
-        width: 250px; /* Feste Breite für die Seitenleiste */
+        width: 280px; 
+        min-width: 280px;
         gap: 20px;
         flex-shrink: 0;
-    }
-
-    /* Flex-Anpassung für Formularelemente im Desktop */
-    #add-item-form {
-        flex-direction: row; /* Elemente nebeneinander */
-        flex-wrap: wrap; /* Umbruch bei Platzmangel */
-        align-items: center;
-    }
-    #add-item-form input {
-        flex-grow: 1; /* Inputs nehmen verfügbaren Platz ein */
-        width: auto; /* Überschreibt 100% Breite */
-    }
-    #add-item-form button {
-        width: auto; /* Überschreibt 100% Breite */
-        flex-shrink: 0; /* Button schrumpft nicht */
-    }
-    /* Spezifische Breiten für Inputs im Desktop, damit sie nicht zu breit werden */
-    #articleInput {
-        max-width: 150px; 
-    }
-    #quantityInput {
-        max-width: 60px;
-    }
-
-
-    #load-controls {
-        flex-direction: row; /* Buttons nebeneinander */
-        justify-content: flex-start;
-    }
-    #load-controls button {
-        width: auto; /* Buttons haben ihre natürliche Breite */
-        flex-grow: 0; /* Wachsen nicht über Notwendigkeit hinaus */
-    }
-    
-    #visualizer {
-        height: 600px; /* Höher auf Desktop */
+        position: sticky;
+        top: 20px;
     }
 }
 
-/* Zusätzliche Anpassungen für sehr kleine Bildschirme (Handy quer) */
 @media (max-width: 480px) {
-    #app-header h1 {
-        font-size: 1.5em;
+    .action-buttons {
+        flex-direction: column;
     }
-    .section-card {
-        padding: 15px;
-    }
-    .section-card h2 {
-        font-size: 1.2em;
-        margin-bottom: 15px;
-    }
-    #currentLoadList li {
-        flex-wrap: wrap; /* Artikeltexte können umbrechen */
-        font-size: 0.9em;
-    }
-    #currentLoadList li button {
-        margin-top: 5px; /* Abstand, wenn umgebrochen */
+    .clear-button {
+        width: 100%;
     }
 }
