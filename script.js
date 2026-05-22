@@ -1,7 +1,7 @@
 // --- 1. GLOBALE KONSTANTEN & DATENSTRUKTUREN ---
 let itemData = {};
 let articlesToLoad = []; 
-const CSV_FILE_PATH = 'stammdaten.csv';
+const CSV_FILE_PATH = '111stammdaten.csv';
 
 // Maximale Paletten-Dimensionen (Hardcoded Logik für Kapazitätsprüfung)
 const MAX_PALETTE_L = 240; 
