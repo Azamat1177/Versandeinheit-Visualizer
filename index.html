@@ -3,74 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📦 3D-Versandvisualisierung</title>
+    <title>📦 Premium 3D-Versandvisualisierung</title>
     
+    <!-- Three.js & OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- Google Fonts & Material Symbols for premium icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header id="app-header">
-        <h1>Versandeinheit Visualizer</h1>
+        <h1>
+            <span class="material-symbols-outlined header-main-icon">local_shipping</span>
+            Versandeinheit Visualizer Pro
+        </h1>
     </header>
 
     <main id="app-container">
         
+        <!-- Left Sidebar: Load & Forms -->
         <div id="left-sidebar">
             
             <section id="pallets-section" class="section-card">
-                <h2>Paletten (Ladung)</h2>
+                <h2>
+                    <span class="material-symbols-outlined section-icon">inventory_2</span>
+                    Paletten (Ladung)
+                </h2>
                 <div id="palletContent">
                     <p class="note">Keine Ladung vorhanden.</p>
                 </div>
             </section>
 
-            
             <section id="add-item-section" class="section-card">
-                <h2>Artikel zur Ladung hinzufügen</h2>
-                <div id="add-item-form">
-                    <input type="text" id="articleInput" placeholder="Artikel-Nr. (z.B. 02-0036)">
-                    <input type="number" id="quantityInput" value="1" min="1">
-                    <button onclick="addToLoad()">Hinzufügen</button>
+                <h2>
+                    <span class="material-symbols-outlined section-icon">add_box</span>
+                    Artikel hinzufügen
+                </h2>
+                
+                <!-- Premium Search & Edit Form -->
+                <div class="premium-form">
+                    <div class="form-group search-group">
+                        <label for="articleInput">
+                            <span class="material-symbols-outlined field-icon">search</span>
+                            Stammdaten durchsuchen
+                        </label>
+                        <div class="input-with-search">
+                            <input type="text" id="articleInput" placeholder="Artikel-Nr. oder Name eingeben..." oninput="handleArticleSearch()">
+                            <div id="search-suggestions" class="suggestions-list hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Duplicate Variants Selector -->
+                    <div id="duplicate-selector-container" class="duplicate-selector hidden">
+                        <span class="selector-title">⚠️ Mehrere Varianten gefunden. Bitte wählen:</span>
+                        <div id="duplicate-options" class="duplicate-options-grid"></div>
+                    </div>
+
+                    <!-- Attribute Editor Fields -->
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="articleNrInput">
+                                <span class="material-symbols-outlined field-icon">tag</span>
+                                Artikel-Nr.
+                            </label>
+                            <input type="text" id="articleNrInput" placeholder="Z.B. 02-0036">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="articleNameInput">
+                                <span class="material-symbols-outlined field-icon">title</span>
+                                Artikelname
+                            </label>
+                            <input type="text" id="articleNameInput" placeholder="Z.B. RETTER R6 Werkzeugwagen">
+                        </div>
+                        <div class="form-group">
+                            <label for="lengthInput">
+                                <span class="material-symbols-outlined field-icon">straighten</span>
+                                Länge (cm)
+                            </label>
+                            <input type="number" id="lengthInput" placeholder="0.0" step="0.1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="widthInput">
+                                <span class="material-symbols-outlined field-icon">square_foot</span>
+                                Breite (cm)
+                            </label>
+                            <input type="number" id="widthInput" placeholder="0.0" step="0.1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="heightInput">
+                                <span class="material-symbols-outlined field-icon">height</span>
+                                Höhe (cm)
+                            </label>
+                            <input type="number" id="heightInput" placeholder="0.0" step="0.1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="weightInput">
+                                <span class="material-symbols-outlined field-icon">scale</span>
+                                Gewicht (kg)
+                            </label>
+                            <input type="number" id="weightInput" placeholder="0.0" step="0.1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="colorTextInput">
+                                <span class="material-symbols-outlined field-icon">palette</span>
+                                Farbe (HEX)
+                            </label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" id="colorInput" value="#007bff" oninput="syncColorInput(this.value)">
+                                <input type="text" id="colorTextInput" value="007BFF" placeholder="007BFF" oninput="syncColorText(this.value)">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantityInput">
+                                <span class="material-symbols-outlined field-icon">filter_9_plus</span>
+                                Menge
+                            </label>
+                            <input type="number" id="quantityInput" value="1" min="1">
+                        </div>
+                    </div>
+                    
+                    <button class="add-button" onclick="addToLoad()">
+                        <span class="material-symbols-outlined btn-icon">playlist_add</span>
+                        Zur Ladung hinzufügen
+                    </button>
                 </div>
 
-                <h3>Aktuelle Ladung</h3>
-                <ul id="currentLoadList">
+                <h3>Aktuelle Ladeliste</h3>
+                <ul id="currentLoadList" class="load-list">
                     <li class="note-list">Noch keine Artikel hinzugefügt.</li>
                 </ul>
 
-                <div id="load-controls">
-                    <button id="visualizeButton" onclick="visualizePackage()">Visualisieren</button>
-                    <button id="clearLoadButton" onclick="clearLoad()">Ladung löschen</button>
+                <div class="action-buttons">
+                    <button id="visualizeButton" class="visualize-button" onclick="visualizePackage()">
+                        <span class="material-symbols-outlined btn-icon">visibility</span>
+                        Visualisieren
+                    </button>
+                    <button id="clearLoadButton" class="clear-button" onclick="clearLoad()">
+                        <span class="material-symbols-outlined btn-icon">delete_forever</span>
+                        Löschen
+                    </button>
                 </div>
+                <button id="ladekarteButton" class="ladekarte-btn" onclick="openLadekarteModal()">
+                    <span class="material-symbols-outlined btn-icon">assignment_turned_in</span>
+                    Ladekarte & Screenshot
+                </button>
             </section>
         </div>
 
-        
+        <!-- Center Section: 3D Canvas -->
         <div id="main-content">
-            
             <section id="visualizer-section" class="section-card">
-                <h2>3D-Visualisierung</h2>
-                <div id="visualizer">
-                    </div>
+                <h2>
+                    <span class="material-symbols-outlined section-icon">3d_rotation</span>
+                    3D-Visualisierung (Interaktiv)
+                </h2>
+                <div id="visualizer"></div>
             </section>
         </div>
         
+        <!-- Right Sidebar: Statistics -->
         <div id="right-sidebar">
-            
             <section id="stats-section" class="section-card">
-                <h2>📦 Maße & Gewicht</h2>
-                <p><strong>Gesamtlänge (L):</strong> <span id="stat-l">0.0 cm</span></p>
-                <p><strong>Gesamtbreite (B):</strong> <span id="stat-b">0.0 cm</span></p>
-                <p><strong>Gesamthöhe (H):</strong> <span id="stat-h">0.0 cm</span></p>
+                <h2>
+                    <span class="material-symbols-outlined section-icon">analytics</span>
+                    Maße & Gewicht
+                </h2>
+                <p>
+                    <span><span class="material-symbols-outlined stat-icon">straighten</span>Gesamtlänge (L):</span> 
+                    <span id="stat-l" class="stat-value">0.0 cm</span>
+                </p>
+                <p>
+                    <span><span class="material-symbols-outlined stat-icon">square_foot</span>Gesamtbreite (B):</span> 
+                    <span id="stat-b" class="stat-value">0.0 cm</span>
+                </p>
+                <p>
+                    <span><span class="material-symbols-outlined stat-icon">height</span>Gesamthöhe (H):</span> 
+                    <span id="stat-h" class="stat-value">0.0 cm</span>
+                </p>
                 <hr>
-                <p><strong>Gesamtgewicht:</strong> <span id="stat-weight">0.0 kg</span></p>
-                <p class="note">Werte basieren auf einer Euro-Palette (120x120x14.4 cm).</p>
+                <p>
+                    <span><span class="material-symbols-outlined stat-icon">scale</span>Gesamtgewicht:</span> 
+                    <span id="stat-weight" class="stat-value font-bold">0.0 kg</span>
+                </p>
+                <p>
+                    <span><span class="material-symbols-outlined stat-icon">space_dashboard</span>Lademeter (LDM):</span> 
+                    <span id="stat-ldm" class="stat-value font-bold color-primary">0.00 LDM</span>
+                </p>
+                <p class="note">Werte basieren auf einer Euro-Palette (120x80x14.4 cm).</p>
+                
+                <!-- Sonderpaletten Warnung Card -->
+                <div id="sonderpalette-alert" class="alert-box alert-warning hidden">
+                    <div class="alert-header">
+                        <span class="alert-icon material-symbols-outlined">warning</span>
+                        <strong>SONDERPALETTE</strong>
+                    </div>
+                    <div class="alert-content">
+                        <p>Diese Sendung überschreitet das Standard-Lademaß (max. 240 cm Länge/Breite oder 220 cm Höhe).</p>
+                        <ul id="sonderpalette-details"></ul>
+                    </div>
+                </div>
             </section>
         </div>
     </main>
+
+    <!-- Elegantes Ladekarten-Modal -->
+    <div id="ladekarteModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>
+                    <span class="material-symbols-outlined header-icon">assignment</span>
+                    Versand-Ladekarte Vorschau
+                </h2>
+                <span class="close-modal" onclick="closeLadekarteModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="canvas-container">
+                    <canvas id="ladekarteCanvas" width="1200" height="800"></canvas>
+                </div>
+                <div class="modal-info-note">
+                    Dieses Dokument wird im professionellen Industrie-Layout generiert. Es kombiniert die 3D-Ladeansicht mit allen Frachtkennzahlen und einem scanbaren QR-Code für Lagerarbeiter.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="download-btn" onclick="downloadLadekarte()">
+                    <span class="material-symbols-outlined btn-icon">download</span>
+                    PNG Herunterladen
+                </button>
+                <button class="print-btn" onclick="printLadekarteCanvas()">
+                    <span class="material-symbols-outlined btn-icon">print</span>
+                    Drucken
+                </button>
+                <button class="close-btn" onclick="closeLadekarteModal()">
+                    Schließen
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
